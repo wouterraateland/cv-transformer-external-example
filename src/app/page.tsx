@@ -120,11 +120,13 @@ function Button({
         }, 1000);
         try {
           await onClick?.(event);
+          clearInterval(i);
+          setDuration(Date.now() - start);
         } catch (error) {
+          clearInterval(i);
+          setDuration(Date.now() - start);
           alert(error);
         }
-        clearInterval(i);
-        setDuration(Date.now() - start);
         target.disabled = false;
       }}
     >
