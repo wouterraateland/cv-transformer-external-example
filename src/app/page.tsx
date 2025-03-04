@@ -70,7 +70,12 @@ export default function Page() {
           {member_id && (
             <Button
               onClick={async () => {
-                setCandidate(await candidateCreate(apiKey, { member_id }));
+                setCandidate(
+                  await candidateCreate(apiKey, {
+                    member_id,
+                    values: { some_key: "some_value" },
+                  })
+                );
               }}
             >
               Create new candidate
