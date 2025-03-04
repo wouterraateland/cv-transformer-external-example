@@ -22,15 +22,18 @@ export default function Button({
         target.disabled = true;
         const start = Date.now();
         setDuration(0);
-        const i = setInterval(() => {
+        let r: ReturnType<typeof requestAnimationFrame>;
+        const updateTimer = () => {
           setDuration(Date.now() - start);
-        }, 1000);
+          r = requestAnimationFrame(updateTimer);
+        };
+        r = requestAnimationFrame(updateTimer);
         try {
           await onClick?.(event);
-          clearInterval(i);
+          cancelAnimationFrame(r);
           setDuration(Date.now() - start);
         } catch (error) {
-          clearInterval(i);
+          cancelAnimationFrame(r);
           setDuration(Date.now() - start);
           alert(error);
         }

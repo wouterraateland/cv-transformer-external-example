@@ -8,11 +8,17 @@ import {
   candidateCreate,
   candidateFill,
 } from "utils/candidates";
-import { Organization, organizationsList } from "utils/organizations";
+import {
+  membersWithUserProfileList,
+  MemberWithUserProfile,
+} from "utils/members-with-user-profiles";
 
 export default function Page() {
   const [apiKey, setApiKey] = useState("");
-  const [organization, setOrganization] = useState<Organization | null>(null);
+  const [members, setMembers] = useState<Array<MemberWithUserProfile> | null>(
+    null
+  );
+  const [member_id, setMemberId] = useState<string | null>(null);
   const [candidate, setCandidate] = useState<Candidate | null>(null);
 
   return (
@@ -39,17 +45,32 @@ export default function Page() {
           </label>
           <Button
             onClick={async () => {
-              const organizations = await organizationsList(apiKey);
-              setOrganization(organizations[0] ?? null);
+              setMembers(await membersWithUserProfileList(apiKey));
             }}
           >
-            Load organization
+            Load members
           </Button>
-          {organization && <div>Organization: {organization.name}</div>}
-          {organization && (
+          {members && (
+            <div>
+              <p>Members:</p>
+              {members.map((member) => (
+                <label key={member.id} className="flex items-center gap-4">
+                  <input
+                    checked={member_id === member.id}
+                    onChange={() =>
+                      setMemberId((id) => (id === member.id ? null : member.id))
+                    }
+                    type="radio"
+                  />
+                  {member.user_profile.name}
+                </label>
+              ))}
+            </div>
+          )}
+          {member_id && (
             <Button
               onClick={async () => {
-                setCandidate(await candidateCreate(apiKey, {}));
+                setCandidate(await candidateCreate(apiKey, { member_id }));
               }}
             >
               Create new candidate
@@ -77,15 +98,18 @@ export default function Page() {
               />
             </label>
           )}
-          {candidate?.cv && (
-            <Button
-              onClick={async () => {
-                setCandidate(await candidateFill(apiKey, candidate.id));
-              }}
-            >
-              Fill candidate data
-            </Button>
-          )}
+          {candidate &&
+            Object.values(candidate.attachments).some(
+              (attachment) => attachment.text
+            ) && (
+              <Button
+                onClick={async () => {
+                  setCandidate(await candidateFill(apiKey, candidate.id));
+                }}
+              >
+                Fill candidate data
+              </Button>
+            )}
           {candidate && Object.values(candidate.values).some(Boolean) && (
             <>
               <p>Results</p>
